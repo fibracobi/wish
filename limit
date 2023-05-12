@@ -1,0 +1,49 @@
+ await next();
+  };
+
+  async function parseBody(ctx) {
+    if (
+      enableJson &&
+      ((detectJSON && detectJSON(ctx)) || ctx.request.is(jsonTypes))
+    ) {
+      return await parse.json(ctx, jsonOpts); // eslint-disable-line no-return-await
+    }
+
+    if (enableForm && ctx.request.is(formTypes)) {
+      return await parse.form(ctx, formOpts); // eslint-disable-line no-return-await
+    }
+
+    if (enableText && ctx.request.is(textTypes)) {
+      return (await parse.text(ctx, textOpts)) || '';
+    }
+
+    if (enableXml && ctx.request.is(xmlTypes)) {
+      return (await parse.text(ctx, xmlOpts)) || '';
+    }
+
+    return {};
+  }
+};
+
+function formatOptions(opts, type) {
+  const res = {};
+  copy(opts).to(res);
+  res.limit = opts[type + 'Limit'];
+  return res;
+}
+
+function extendType(original, extend) {
+  if (extend) {
+    if (!Array.isArray(extend)) {
+      extend = [extend];
+    }
+
+    extend.forEach(function(extend) {
+      original.push(extend);
+    });
+  }
+}
+
+function checkEnable(types, type) {
+  return types.includes(type);
+}
